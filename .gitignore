@@ -22,7 +22,6 @@
 # Project specific
 /logs/
 /ollama_data/
-/docs/
 /coverage.out
 /tmp/
 
