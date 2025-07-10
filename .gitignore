@@ -1,0 +1,39 @@
+# Binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go specific
+*.o
+*.a
+*.log
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+/logs/
+/ollama_data/
+/docs/
+/coverage.out
+/tmp/
+
+# Dependencies
+/vendor/
+
+# Environment files
+.env
+.env.local
+
+# Generated files
+*.generated.go
+swagger.json
+swagger.yaml 

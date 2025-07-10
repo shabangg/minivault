@@ -1,0 +1,59 @@
+{
+    "info": {
+        "name": "MiniVault API",
+        "description": "Collection for testing MiniVault API endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Generate Response",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"prompt\": \"Tell me a joke\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/generate",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["generate"]
+                }
+            }
+        },
+        {
+            "name": "Generate Streaming Response",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "text/event-stream"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"prompt\": \"Tell me a story\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/generate/stream",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["generate", "stream"]
+                }
+            }
+        }
+    ]
+} 

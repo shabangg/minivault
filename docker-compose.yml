@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # API service
+  api:
+    build: .
+    container_name: minivault-api
+    environment:
+      - LLM_TYPE=ollama
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=smollm:135m
+      - PORT=8080
+    volumes:
+      - api_logs:/app/logs
+    networks:
+      - minivault-network
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/swagger/index.html"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: minivault-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - minivault-network
+    depends_on:
+      - api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Ollama service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: minivault-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - minivault-network
+    healthcheck:
+      # Check if model is pulled and server is ready
+      test: >
+        sh -c '
+          nc -z localhost 11434 &&
+          ollama list | grep -q "${OLLAMA_MODEL:-smollm:135m}"
+        '
+      interval: 10s
+      timeout: 5s
+      retries: 30  # Increased retries to allow for model pulling
+      start_period: 120s  # Increased start period to allow for model pulling
+    restart: unless-stopped
+    # Install required tools and run Ollama
+    entrypoint: >
+      sh -c '
+        # Install necessary tools
+        apt-get update && apt-get install -y netcat-traditional
+
+        # Start Ollama server
+        ollama serve &
+        SERVER_PID=$$!
+
+        # Wait for server to be ready
+        while ! nc -z localhost 11434; do
+          echo "Waiting for Ollama server..."
+          sleep 2
+        done
+        echo "Ollama server is ready!"
+
+        # Pull model and wait for completion
+        echo "Pulling model ${OLLAMA_MODEL:-smollm:135m}..."
+        ollama pull ${OLLAMA_MODEL:-smollm:135m}
+        echo "Model pull complete!"
+
+        # Keep container running
+        wait $$SERVER_PID
+      '
+
+networks:
+  minivault-network:
+    driver: bridge
+
+volumes:
+  api_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  ollama_data:
+    driver: local 
