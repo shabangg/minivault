@@ -20,10 +20,10 @@
                     "raw": "{\n    \"prompt\": \"Tell me a joke\"\n}"
                 },
                 "url": {
-                    "raw": "http://localhost:8080/generate",
+                    "raw": "http://localhost:80/generate",
                     "protocol": "http",
                     "host": ["localhost"],
-                    "port": "8080",
+                    "port": "80",
                     "path": ["generate"]
                 }
             }
@@ -47,10 +47,10 @@
                     "raw": "{\n    \"prompt\": \"Tell me a story\"\n}"
                 },
                 "url": {
-                    "raw": "http://localhost:8080/generate/stream",
+                    "raw": "http://localhost:80/generate/stream",
                     "protocol": "http",
                     "host": ["localhost"],
-                    "port": "8080",
+                    "port": "80",
                     "path": ["generate", "stream"]
                 }
             }

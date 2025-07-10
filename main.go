@@ -11,7 +11,7 @@ import (
 
 // @title MiniVault API
 // @version 1.0
-// @description A lightweight local REST API that simulates ModelVault's prompt-response functionality.
+// @description A lightweight local REST API that simulates MiniVault's prompt-response functionality.
 // @host localhost:8080
 // @BasePath /
 func main() {

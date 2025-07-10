@@ -1,6 +1,6 @@
 # MiniVault API
 
-A lightweight local REST API that simulates ModelVault's prompt-response functionality. This implementation includes both Ollama-based LLM responses and fallback stub responses.
+A lightweight local REST API that simulates MiniVault's prompt-response functionality. This implementation includes both Ollama-based LLM responses and fallback stub responses.
 
 ## Features
 
@@ -32,7 +32,7 @@ docker-compose logs -f ollama
 This will start:
 - The API service (with automatic Ollama/stub fallback)
 - Nginx reverse proxy
-- Ollama LLM service with smollm:135m model
+- Ollama LLM service with smollm:135m model (small model for dev, can use any via env)
 
 The API will be available at:
 - Main API: http://localhost/
@@ -44,7 +44,7 @@ The API service supports the following environment variables:
 - `LLM_TYPE`: LLM implementation to use ("ollama" or "stub", default: "ollama")
 - `OLLAMA_HOST`: Ollama server URL (default: http://localhost:11434)
 - `OLLAMA_MODEL`: Ollama model to use (default: smollm:135m)
-- `PORT`: Server port (default: 8080)
+- `PORT`: Server port (default: 80)
 
 ## API Usage
 
@@ -91,7 +91,7 @@ curl -N -X POST http://localhost/generate/stream \
 
 ## Logging
 
-All interactions are logged to `logs/log.jsonl` in a detailed JSONL format:
+All interactions are logged to `logs/log.jsonl` in a detailed JSONL format. The logs directory is mounted directly from the host system for easy access and persistence.
 
 ```json
 {
@@ -117,33 +117,6 @@ All interactions are logged to `logs/log.jsonl` in a detailed JSONL format:
 }
 ```
 
-### Log Fields
-
-1. Request Details:
-   - `id`: Unique request identifier
-   - `timestamp`: Request time in ISO 8601 format
-   - `duration_ms`: Request processing time in milliseconds
-
-2. Input Details:
-   - `prompt`: The input prompt
-   - `llm_type`: Type of LLM used ("ollama" or "stub")
-   - `llm_model`: Model name when using Ollama
-   - `streaming`: Whether streaming was used
-
-3. Response Details:
-   - `response`: Generated text
-   - `token_count`: Approximate token count
-   - `response_size`: Response size in bytes
-
-4. Status Details:
-   - `success`: Whether request succeeded
-   - `error`: Error message if failed
-
-5. System Metrics:
-   - `go_version`: Go runtime version
-   - `goroutines`: Number of active goroutines
-   - `memory_bytes`: Memory usage in bytes
-
 ### Log Analysis
 
 The JSONL format makes it easy to analyze logs using standard tools:
@@ -159,111 +132,14 @@ cat logs/log.jsonl | jq '.duration_ms' | awk '{sum+=$1} END {print sum/NR}'
 cat logs/log.jsonl | jq -r '[.timestamp, .memory_bytes] | @tsv'
 ```
 
-**JavaScript Client Example:**
-```javascript
-async function streamText(prompt) {
-    const response = await fetch('http://localhost/generate/stream', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt })
-    });
-
-    // Read response as newline-delimited JSON
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-        const {value, done} = await reader.read();
-        if (done) break;
-        
-        // Add new data to buffer and split by newlines
-        buffer += decoder.decode(value, {stream: true});
-        const lines = buffer.split('\n');
-        
-        // Process complete lines
-        for (let i = 0; i < lines.length - 1; i++) {
-            if (lines[i].trim()) {
-                const token = JSON.parse(lines[i]).token;
-                // Use the token (e.g., append to UI)
-                console.log(token);
-            }
-        }
-        
-        // Keep incomplete line in buffer
-        buffer = lines[lines.length - 1];
-    }
-}
-
-// Usage
-streamText("Tell me a story").catch(console.error);
-```
-
-**Python Client Example:**
-```python
-import requests
-import json
-
-def stream_text(prompt):
-    response = requests.post(
-        'http://localhost/generate/stream',
-        json={'prompt': prompt},
-        stream=True
-    )
-    
-    for line in response.iter_lines():
-        if line:
-            token = json.loads(line)['token']
-            # Use the token
-            print(token, end='', flush=True)
-
-# Usage
-stream_text("Tell me a story")
-```
-
-## Development
-
-### Running Tests
-
-The project includes comprehensive tests:
-
-```bash
-# Run all tests
-go test ./... -v
-
-# Run specific test suite
-go test ./src/api -v
-go test ./src/service -v
-
-# Run with coverage
-go test ./... -coverprofile=coverage.out
-go tool cover -html=coverage.out  # View coverage in browser
-```
-
-### Test Structure
-
-1. Unit Tests:
-   - API Handlers (`src/api/handlers_test.go`)
-   - Service Layer (`src/service/generator_test.go`)
-   - Logger (`src/service/logger_test.go`)
-
-2. Integration Tests:
-   - End-to-end tests (`e2e/e2e_test.go`)
-
-3. Mock Implementations:
-   - MockGenerator for LLM interface
-   - MockLogger for logging service
-
 ### Docker Volumes
 
-The project uses named Docker volumes for persistence:
+The project uses the following volume configuration:
 
-1. `api_logs`: API service logs
+1. `./logs:/app/logs`: API service logs
    - Contains request/response logs
    - JSONL format with detailed metrics
-   - Persists across container restarts
+   - Mounted directly from host for easy access
 
 2. `nginx_logs`: Nginx access and error logs
    - Standard Nginx log format
@@ -279,9 +155,8 @@ To manage volumes:
 # List volumes
 docker volume ls
 
-# Inspect logs
-docker exec minivault-api cat /app/logs/log.jsonl
-docker exec minivault-nginx cat /var/log/nginx/access.log
+# View logs directly from host
+cat logs/log.jsonl
 
 # Clean up volumes (caution: this deletes all data)
 docker-compose down -v
@@ -299,12 +174,10 @@ minivault-api/
 ├── e2e/              # End-to-end tests
 ├── nginx/            # Nginx configuration
 ├── postman/          # Postman collection
-├── logs/             # Request logs
+├── logs/             # Request logs (mounted from host)
 ├── main.go           # Application entry point
 ├── Dockerfile        # Docker build file
-├── docker-compose.yml # Docker Compose configuration
-├── go.mod            # Go module file
-└── README.md         # This file
+└── docker-compose.yml # Docker Compose configuration
 ```
 
 ## Implementation Notes
