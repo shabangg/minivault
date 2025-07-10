@@ -165,7 +165,7 @@ docker-compose down -v
 ### Project Structure
 
 ```
-minivault-api/
+minivault/
 ├── src/
 │   ├── api/          # API handlers and routing
 │   ├── service/      # Business logic and services
