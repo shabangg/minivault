@@ -1,4 +1,4 @@
-module minivault-api
+module minivault
 
 go 1.22
 

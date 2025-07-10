@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"minivault-api/src/llm"
+	"minivault/src/llm"
 )
 
 // Generator interface defines the contract for text generation services

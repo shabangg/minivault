@@ -1,7 +1,7 @@
 package api
 
 import (
-	_ "minivault-api/docs" // This is required for swagger
+	_ "minivault/docs" // This is required for swagger
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"minivault-api/src/service"
-	"minivault-api/src/types"
+	"minivault/src/service"
+	"minivault/src/types"
 
 	"github.com/gin-gonic/gin"
 )

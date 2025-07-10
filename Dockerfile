@@ -13,7 +13,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /minivault-api ./main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /minivault ./main.go
 
 # Final stage
 FROM alpine:latest
@@ -24,7 +24,7 @@ RUN apk add --no-cache curl
 WORKDIR /app
 
 # Copy binary from builder
-COPY --from=builder /minivault-api .
+COPY --from=builder /minivault .
 
 # Create logs directory
 RUN mkdir -p logs
@@ -37,4 +37,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/swagger/index.html || exit 1
 
 # Run the application
-CMD ["./minivault-api"] 
+CMD ["./minivault"] 

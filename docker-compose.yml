@@ -4,7 +4,7 @@ services:
   # API service
   api:
     build: .
-    container_name: minivault-api
+    container_name: minivault
     environment:
       - LLM_TYPE=ollama
       - OLLAMA_HOST=http://ollama:11434

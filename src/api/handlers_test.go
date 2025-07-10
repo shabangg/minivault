@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"minivault-api/src/types"
+	"minivault/src/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

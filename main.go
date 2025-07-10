@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"minivault-api/src/api"
-	"minivault-api/src/service"
+	"minivault/src/api"
+	"minivault/src/service"
 )
 
 // @title MiniVault API
